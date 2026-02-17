@@ -196,6 +196,6 @@ Projekat prati standardni proces nauke o podacima:
 
 ## Autori
 
-Aleksa Đorđević 51-2022
-Nikola Živadinović 55-2022
+Aleksa Đorđević 51-2022\
+Nikola Živadinović 55-2022\
 Bogdan Jevtić 59-2022
