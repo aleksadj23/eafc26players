@@ -7,6 +7,7 @@ library(dplyr)
 library(corrplot)
 library(ggcorrplot)
 library(stringr)
+library(regclass)
 
 data=read.csv("EAFC26.csv")
 data
@@ -385,6 +386,25 @@ ggplot(attackers_data, aes(x = Reactions, y = OVR, color = Dribbling)) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 
+grid <- expand.grid(
+  Composure = seq(min(midfielders_data$Composure), max(midfielders_data$Composure), length.out = 160),
+  Short.Passing = seq(min(midfielders_data$Short.Passing), max(midfielders_data$Short.Passing), length.out = 160)
+)
+fit_lm <- lm(OVR ~ Composure + Short.Passing, data = midfielders_data)
+grid$OVR_hat <- predict(fit_lm, newdata = grid)
+ggplot() +
+  geom_contour_filled(data = grid, aes(Composure, Short.Passing, z = OVR_hat), bins = 12) +
+  geom_point(data = midfielders_data, aes(Composure, Short.Passing), alpha = 0.25) +
+  scale_fill_viridis_d() +
+  labs(
+    title = "Contour : Uticaj Composure i Short Passing na OVR (Veznjaci)",
+    x = "Composure",
+    y = "Short Passing",
+    fill = "OVR (procena)"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+
 
 ggplot(midfielders_data, aes(x = Composure, y = OVR, color = Short.Passing)) +
   geom_point(alpha = 0.6) +
@@ -398,6 +418,27 @@ ggplot(midfielders_data, aes(x = Composure, y = OVR, color = Short.Passing)) +
   ) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+
+grid <- expand.grid(
+  Composure = seq(min(midfielders_data$Composure), max(midfielders_data$Composure), length.out = 160),
+  Short.Passing = seq(min(midfielders_data$Short.Passing), max(midfielders_data$Short.Passing), length.out = 160)
+)
+fit_lm <- lm(OVR ~ Composure + Short.Passing, data = midfielders_data)
+grid$OVR_hat <- predict(fit_lm, newdata = grid)
+ggplot() +
+  geom_contour_filled(data = grid, aes(Composure, Short.Passing, z = OVR_hat), bins = 12) +
+  geom_point(data = midfielders_data, aes(Composure, Short.Passing), alpha = 0.25) +
+  scale_fill_viridis_d() +
+  labs(
+    title = "Contour (LM): Uticaj Composure i Short Passing na OVR (Veznjaci)",
+    x = "Composure",
+    y = "Short Passing",
+    fill = "OVR (procena)"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+
+
 
 ggplot(midfielders_data, aes(x = Vision, y = OVR, color = Crossing)) +
   geom_point(alpha = 0.6) +
@@ -528,8 +569,76 @@ midfielders_data$Position <- as.factor(midfielders_data$Position)
 midfielders_data$Preferred.foot <- as.factor(midfielders_data$Preferred.foot)
 midfielders_data$CardType <- as.factor(midfielders_data$CardType)
 
+#FEATURE ENGINEERING
+
+# Kreiranje kategorijske promenljive AgeGroup za napadače
+attackers_data$AgeGroup <- cut(
+  attackers_data$Age,
+  breaks = c(-Inf, 21, 27, 33, Inf),
+  labels = c("Young", "Prime", "Experienced", "Veteran")
+)
+
+# Pretvaranje u factor tip
+attackers_data$AgeGroup <- as.factor(attackers_data$AgeGroup)
+
+# Provera
+table(attackers_data$AgeGroup)
+
+ggplot(attackers_data, aes(x = AgeGroup, y = OVR)) +
+  geom_boxplot(fill = "skyblue", color = "black") +
+  labs(
+    title = "OVR po starosnim grupama kod napadača",
+    x = "Starosna grupa",
+    y = "OVR"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+
+ggplot(attackers_data, aes(x = AgeGroup)) +
+  geom_bar(fill = "steelblue") +
+  labs(
+    title = "Distribucija napadača po starosnim grupama",
+    x = "Starosna grupa",
+    y = "Broj igrača"
+  ) +
+  theme_minimal()
+
+
+# Kreiranje kategorijske promenljive AgeGroup za veznjake
+midfielders_data$AgeGroup <- cut(
+  midfielders_data$Age,
+  breaks = c(-Inf, 21, 27, 33, Inf),
+  labels = c("Young", "Prime", "Experienced", "Veteran")
+)
+
+# Pretvaranje u factor tip
+midfielders_data$AgeGroup <- as.factor(midfielders_data$AgeGroup)
+
+# Provera
+table(midfielders_data$AgeGroup)
+
+ggplot(midfielders_data, aes(x = AgeGroup, y = OVR)) +
+  geom_boxplot(fill = "lightgreen", color = "black") +
+  labs(
+    title = "OVR po starosnim grupama kod veznjaka",
+    x = "Starosna grupa",
+    y = "OVR"
+  ) +
+  theme_minimal()
+
+ggplot(midfielders_data, aes(x = AgeGroup)) +
+  geom_bar(fill = "steelblue") +
+  labs(
+    title = "Distribucija veznjaka po starosnim grupama",
+    x = "Starosna grupa",
+    y = "Broj igrača"
+  ) +
+  theme_minimal()
+
+
 attackers_data
 midfielders_data
+
 
 #PRIPREMA I PODELA NA TRAIN I TEST
 
@@ -543,8 +652,8 @@ attackers_model <- attackers_data %>%
     Volleys,
     Reactions,
     Dribbling,
-    Age,
-    CardType
+    AgeGroup,
+    Stamina
   )
 
 midfielders_model <- midfielders_data %>%
@@ -560,7 +669,7 @@ midfielders_model <- midfielders_data %>%
     Ball.Control,
     Composure,
     Reactions,
-    Age,
+    AgeGroup,
     CardType
   )
 
@@ -627,29 +736,34 @@ summary(model_atc_3)
 #4
 model_atc_4 <- lm(
   OVR ~ Finishing + Ball.Control + Volleys +
-    Reactions + Dribbling + Age,
+    Reactions + Dribbling + AgeGroup,
   data = train_atc
 )
+
+summary(model_atc_4)
+VIF(model_atc_4)
 
 pred_atc_4 <- predict(model_atc_4, test_atc)
 rmse_atc_4 <- sqrt(mean((pred_atc_4 - true_ovr_atc)^2))
 mae_atc_4 <- mean(abs(pred_atc_4 - true_ovr_atc))
 rmse_atc_4
 mae_atc_4
-summary(model_atc_4)
 
 #5
 model_atc_5 <- lm(
   OVR ~ Finishing + Ball.Control + Volleys +
-    Reactions + Dribbling + Age + CardType,
+    Reactions + Dribbling + AgeGroup + Stamina,
   data = train_atc
 )
+
+summary(model_atc_5)
+VIF(model_atc_5)
 
 pred_atc_5 <- predict(model_atc_5, test_atc)
 rmse_atc_5 <- sqrt(mean((pred_atc_5 - true_ovr_atc)^2))
 mae_atc_5 <- mean(abs(pred_atc_5 - true_ovr_atc))
-rmse_atc_5; mae_atc_5
-summary(model_atc_5)
+rmse_atc_5
+mae_atc_5
 
 #MODELI ZA VEZNJAKE
 
@@ -694,51 +808,56 @@ summary(model_mid_3)
 #4
 model_mid_4 <- lm(
   OVR ~ Vision + Short.Passing + Crossing +
-    Ball.Control + Composure + Reactions + Age,
+    Ball.Control + Composure + Reactions + AgeGroup,
   data = train_mid
 )
+
+summary(model_mid_4)
+VIF(model_mid_4)
 
 pred_mid_4 <- predict(model_mid_4, test_mid)
 rmse_mid_4 <- sqrt(mean((pred_mid_4 - true_ovr_mid)^2))
 mae_mid_4 <- mean(abs(pred_mid_4 - true_ovr_mid))
 rmse_mid_4
 mae_mid_4
-summary(model_mid_4)
 
 #5
 model_mid_5 <- lm(
   OVR ~ Vision + Short.Passing + Crossing +
     Ball.Control + Composure + Reactions +
-    Age + CardType,
+    AgeGroup,
   data = train_mid
 )
+
+summary(model_mid_5)
+VIF(model_mid_5)
 
 pred_mid_5 <- predict(model_mid_5, test_mid)
 rmse_mid_5 <- sqrt(mean((pred_mid_5 - true_ovr_mid)^2))
 mae_mid_5 <- mean(abs(pred_mid_5 - true_ovr_mid))
 rmse_mid_5
 mae_mid_5
-summary(model_mid_5)
 
 #6
 model_mid_6 <- lm(
   OVR ~ Vision + Short.Passing +
     Ball.Control + Composure + Reactions +
-    Age + CardType +
+    AgeGroup +
     Long.Passing + Dribbling + Stamina,
   data = train_mid
 )
 
+summary(model_mid_6)
+VIF(model_mid_6)
 
 pred_mid_6 <- predict(model_mid_6, test_mid)
 rmse_mid_6 <- sqrt(mean((pred_mid_6 - true_ovr_mid)^2))
 mae_mid_6 <- mean(abs(pred_mid_6 - true_ovr_mid))
-rmse_mid_6; mae_mid_6
-summary(model_mid_6)
+rmse_mid_6
+mae_mid_6
 
 #RANDOM FOREST
 
-#NAPADACI
 install.packages("ranger")
 library(ranger)
 
@@ -746,12 +865,9 @@ library(ranger)
 
 rf_atc <- ranger(
   OVR ~ Finishing + Ball.Control + Volleys +
-    Reactions + Dribbling + Age + CardType,
+    Reactions + Dribbling + AgeGroup,
   data = train_atc,
   num.trees = 500,
-  mtry = floor(sqrt(7)),
-  min.node.size = 5,
-  sample.fraction = 0.75,
   importance = "impurity",
   seed = 123
 )
@@ -791,13 +907,10 @@ ggplot(rf_imp_atc, aes(x = reorder(feature, importance), y = importance)) +
 
 rf_mid <- ranger(
   OVR ~ Vision + Short.Passing + Ball.Control +
-    Composure + Reactions + Age + CardType +
+    Composure + Reactions + AgeGroup +
     Long.Passing + Dribbling + Stamina,
   data = train_mid,
   num.trees = 500,
-  mtry = floor(sqrt(10)),
-  min.node.size = 5,
-  sample.fraction = 0.75,
   importance = "impurity",
   seed = 123
 )
@@ -944,10 +1057,12 @@ ggplot(xgb_imp_mid,
 install.packages("glmnet")
 library(glmnet)
 #NAPADACI
+train_atc$AgeGroup <- as.factor(train_atc$AgeGroup)
+test_atc$AgeGroup <- as.factor(test_atc$AgeGroup)
 
 x_atc <- model.matrix(
   OVR ~ Finishing + Ball.Control + Volleys +
-    Reactions + Dribbling + Age + CardType,
+    Reactions + Dribbling + AgeGroup,
   data = train_atc
 )[, -1]
 
@@ -956,12 +1071,13 @@ y_atc <- train_atc$OVR
 lasso_atc <- cv.glmnet(
   x_atc, y_atc,
   alpha = 1,
-  nfolds = 10
+  nfolds = 10,
+  standardize = TRUE
 )
 
 x_test_atc <- model.matrix(
   OVR ~ Finishing + Ball.Control + Volleys +
-    Reactions + Dribbling + Age + CardType,
+    Reactions + Dribbling + AgeGroup,
   data = test_atc
 )[, -1]
 
@@ -985,10 +1101,11 @@ lasso_imp_atc <- data.frame(
   coefficient = as.numeric(lasso_coef_atc)
 )
 
-lasso_imp_atc <- lasso_imp_atc[lasso_imp_atc$feature != "(Intercept)", ]
+lasso_imp_atc <- lasso_imp_atc[
+  lasso_imp_atc$feature != "(Intercept)" &
+    lasso_imp_atc$coefficient != 0, ]
 
 lasso_imp_atc$importance <- abs(lasso_imp_atc$coefficient)
-
 lasso_imp_atc <- lasso_imp_atc[order(-lasso_imp_atc$importance), ]
 
 print(lasso_imp_atc)
@@ -1007,24 +1124,27 @@ ggplot(lasso_imp_atc,
 
 #VEZNJACI
 
+# priprema matrice prediktora
 x_mid <- model.matrix(
   OVR ~ Vision + Short.Passing + Ball.Control +
-    Composure + Reactions + Age + CardType +
+    Composure + Reactions + AgeGroup +
     Long.Passing + Dribbling + Stamina,
   data = train_mid
 )[, -1]
 
 y_mid <- train_mid$OVR
 
+# treniranje LASSO modela
 lasso_mid <- cv.glmnet(
   x_mid, y_mid,
   alpha = 1,
-  nfolds = 10
+  nfolds = 10,
+  standardize = TRUE
 )
 
 x_test_mid <- model.matrix(
   OVR ~ Vision + Short.Passing + Ball.Control +
-    Composure + Reactions + Age + CardType +
+    Composure + Reactions + AgeGroup +
     Long.Passing + Dribbling + Stamina,
   data = test_mid
 )[, -1]
@@ -1049,13 +1169,17 @@ lasso_imp_mid <- data.frame(
   coefficient = as.numeric(lasso_coef_mid)
 )
 
-lasso_imp_mid <- lasso_imp_mid[lasso_imp_mid$feature != "(Intercept)", ]
+# uklanjamo intercept i koeficijente 0
+lasso_imp_mid <- lasso_imp_mid[
+  lasso_imp_mid$feature != "(Intercept)" &
+    lasso_imp_mid$coefficient != 0, ]
 
 lasso_imp_mid$importance <- abs(lasso_imp_mid$coefficient)
-
 lasso_imp_mid <- lasso_imp_mid[order(-lasso_imp_mid$importance), ]
 
 print(lasso_imp_mid)
+
+library(ggplot2)
 
 ggplot(lasso_imp_mid,
        aes(x = reorder(feature, importance), y = importance)) +
@@ -1067,3 +1191,85 @@ ggplot(lasso_imp_mid,
     y = "Importance"
   ) +
   theme_minimal()
+
+
+install.packages("rpart")
+install.packages("rpart.plot")
+library(rpart)
+library(rpart.plot)
+
+tree_mid <- rpart(
+  OVR ~ Vision + Short.Passing + Ball.Control +
+    Composure + Reactions + AgeGroup +
+    Long.Passing + Dribbling + Stamina,
+  data = train_mid,
+  method = "anova"
+)
+
+rpart.plot(tree_mid,
+           type = 2,
+           extra = 101,
+           fallen.leaves = TRUE,
+           main = "Decision Tree — Veznjaci")
+
+tree_mid$variable.importance
+
+imp_mid_tree <- data.frame(
+  feature = names(tree_mid$variable.importance),
+  importance = tree_mid$variable.importance
+)
+
+library(ggplot2)
+
+ggplot(imp_mid_tree,
+       aes(x = reorder(feature, importance), y = importance)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(
+    title = "Feature Importance — Decision Tree (Veznjaci)",
+    x = "Feature",
+    y = "Importance"
+  ) +
+  theme_minimal()
+
+
+#DECISION TREES
+
+att_tree_df <- attackers_data[, c("OVR","Finishing","Ball.Control","Volleys","Reactions","Dribbling","Age")]
+
+set.seed(123)
+tree_att <- rpart(
+  OVR ~ .,
+  data = att_tree_df,
+  method = "anova",
+  control = rpart.control(cp = 0.01, maxdepth = 4, minsplit = 30)
+)
+
+# PRIKAZ
+rpart.plot(
+  tree_att,
+  type = 2, extra = 101, fallen.leaves = TRUE, cex = 0.8,
+  main = "Decision Tree (Regresija): OVR — Napadači"
+)
+
+
+mid_tree_df <- midfielders_data[, c(
+  "OVR",
+  "Vision","Short.Passing","Dribbling","Stamina","Balance","Long.Passing",
+  "Crossing","Ball.Control","Composure","Reactions","Age"
+)]
+
+set.seed(123)
+tree_mid <- rpart(
+  OVR ~ .,
+  data = mid_tree_df,
+  method = "anova",
+  control = rpart.control(cp = 0.01, maxdepth = 4, minsplit = 30)
+)
+
+# PRIKAZ
+rpart.plot(
+  tree_mid,
+  type = 2, extra = 101, fallen.leaves = TRUE, cex = 0.7,
+  main = "Decision Tree (Regresija): OVR — Veznjaci"
+)
