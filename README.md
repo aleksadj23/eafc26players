@@ -215,8 +215,9 @@ Numeričke vrednosti :
 5. Dribbling
 6. Stamina
 7. Shot.Power
+
 Kategorijska promenljiva:
-AgeGroup ("Young", "Experienced", "Veteran")
+- AgeGroup ("Young", "Experienced", "Veteran")
 
 Model Veznjaci:
 Numeričke vrednosti :
@@ -228,8 +229,9 @@ Numeričke vrednosti :
 6. Long.Passing
 7. Dribbling
 8. Stamina
+
 Kategorijska promenljiva:
-AgeGroup ("Young", "Experienced", "Veteran")
+- AgeGroup ("Young", "Experienced", "Veteran")
 ------------------------------------------------------------------------
 ## Autori
 
