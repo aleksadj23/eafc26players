@@ -207,6 +207,7 @@ pr("produkcija.R") %>% pr_run(port=8000)
 
 Nakon pokretanja date komande, otvara se Swagger meni, gde se mogu testirati najbolji model za napadača i vezne igrače, unošenjem adekvatnih vrednosti.
 Model Napadači:
+
 Numeričke vrednosti :
 1. Finishing
 2. Ball.Control
@@ -220,6 +221,7 @@ Kategorijska promenljiva:
 - AgeGroup ("Young", "Experienced", "Veteran")
 
 Model Veznjaci:
+
 Numeričke vrednosti :
 1. Vision
 2. Short.Passing
