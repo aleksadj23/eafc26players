@@ -201,8 +201,9 @@ source("produkcija.R")
 ```
 
 Nakon toga, u konzoli ukucamo komandu: 
-
+```
 pr("produkcija.R") %>% pr_run(port=8000)
+```
 
 Nakon pokretanja date komande, otvara se Swagger meni, gde se mogu testirati najbolji model za napadača i vezne igrače, unošenjem adekvatnih vrednosti.
 Model Napadači:
