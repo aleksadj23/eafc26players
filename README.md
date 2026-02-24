@@ -179,7 +179,6 @@ plots/ (generisani grafici)
 README.md
 
 ------------------------------------------------------------------------
-
 ## Metodologija
 
 Projekat prati standardni proces nauke o podacima:
@@ -194,6 +193,43 @@ Projekat prati standardni proces nauke o podacima:
 
 ------------------------------------------------------------------------
 
+## Produkcija i testiranje modela
+
+Model testiramo tako što pokrenemo skriptu produkcija.r
+``` r
+source("produkcija.R")
+```
+
+Nakon toga, u konzoli ukucamo komandu: 
+
+pr("produkcija.R") %>% pr_run(port=8000)
+
+Nakon pokretanja date komande, otvara se Swagger meni, gde se mogu testirati najbolji model za napadača i vezne igrače, unošenjem adekvatnih vrednosti.
+Model Napadači:
+Numeričke vrednosti :
+1. Finishing
+2. Ball.Control
+3. Volleys
+4. Reactions
+5. Dribbling
+6. Stamina
+7. Shot.Power
+Kategorijska promenljiva:
+AgeGroup ("Young", "Experienced", "Veteran")
+
+Model Veznjaci:
+Numeričke vrednosti :
+1. Vision
+2. Short.Passing
+3. Ball.Control
+4. Composure
+5. Reactions
+6. Long.Passing
+7. Dribbling
+8. Stamina
+Kategorijska promenljiva:
+AgeGroup ("Young", "Experienced", "Veteran")
+------------------------------------------------------------------------
 ## Autori
 
 Aleksa Đorđević 51-2022\
