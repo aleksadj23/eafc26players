@@ -219,7 +219,7 @@ Numeričke vrednosti :
 7. Shot.Power
 
 Kategorijska promenljiva:
-- AgeGroup ("Young", "Experienced", "Veteran")
+- AgeGroup ("Young", "Prime", "Experienced", "Veteran")
 
 Model Veznjaci:
 
@@ -234,7 +234,7 @@ Numeričke vrednosti :
 8. Stamina
 
 Kategorijska promenljiva:
-- AgeGroup ("Young", "Experienced", "Veteran")
+- AgeGroup ("Young", "Prime", "Experienced", "Veteran")
 ------------------------------------------------------------------------
 ## Autori
 
